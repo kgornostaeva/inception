@@ -1,36 +1,52 @@
 version: '3'
 services:
-  mysql:
-    build: /vagrant/srcs/mysql
+  mariadb:
+    build: /vagrant/srcs/mariadb
     volumes:
       - /data/mysql:/var/lib/mysql
     environment:
-      MYSQL_ROOT_PASSWORD: admin
-      MYSQL_DATABASE: wp_db
-      MYSQL_USER: admin
-      MYSQL_PASSWORD: admin
+      MYSQL_ROOT_PASSWORD: pvivian
+      MYSQL_DATABASE: wordpress
+      MYSQL_USER: wp
+      MYSQL_PASSWORD: pvivian
+    networks:
+      - back
+    ports:
+      - "3306:3306"
     restart: always
+
   wordpress:
     build: /vagrant/srcs/wordpress
     volumes:
-      - /data/html:/var/www/html
+      - /data/html:/var/www/html/wordpress
     depends_on:
-      - mysql
+      - mariadb
     environment:
-      WORDPRESS_DB_HOST: mysql
-      MYSQL_ROOT_PASSWORD: admin
-      WORDPRESS_DB_NAME: wp_db
-      WORDPRESS_DB_USER: admin
-      WORDPRESS_DB_PASSWORD: admin
+      WORDPRESS_DB_HOST: mariadb
+      MYSQL_ROOT_PASSWORD: pvivian
+      WORDPRESS_DB_NAME: wordpress
+      WORDPRESS_DB_USER: wp
+      WORDPRESS_DB_PASSWORD: pvivian
       WORDPRESS_TABLE_PREFIX: wp_
-    links:
-      - mysql
+    networks:
+      - front
+      - back
+    ports:
+      - "9000:9000"
     restart: always
+
   nginx:
     build: /vagrant/srcs/nginx
     volumes:
-      - /data/html:/var/www/html
+      - /data/html:/var/www/html/wordpress
     ports:
-      - 8080:80
-    links:
+      - "80:80"
+      - "443:443"
+    depends_on:
       - wordpress
+    networks:
+      - front
+
+networks:
+  front:
+  back:

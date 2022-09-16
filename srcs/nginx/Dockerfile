@@ -13,22 +13,17 @@
 FROM alpine:3.15
 
 # Necessary packages installation
-RUN apk update && apk upgrade && \
-	apk add nginx openssl openssh openssh-server openrc supervisor
+RUN apk update && apk upgrade && apk add nginx openssl
 
 # SSL certificate creation
-RUN openssl req -x509 -nodes -newkey rsa:2048 -days 365 -keyout /etc/ssl/private/nginx.key -out /etc/ssl/certs/nginx.crt \
--subj /C=/ST=/L=/O=/OU=/CN=server/emailAddress=
+RUN mkdir /etc/ssl/private && \
+     openssl req -x509 -nodes -newkey rsa:2048 -days 365 -keyout /etc/ssl/private/nginx.key -out /etc/ssl/certs/nginx.crt \
+    -subj /C=/ST=/L=/O=/OU=/CN=server/emailAddress=
 
 # NGINX configuration
-COPY nginx_config /etc/nginx/conf.d/default.conf
-COPY supervisor.conf /etc/supervisord.conf
 RUN mkdir -p /run/nginx
+COPY nginx_config /etc/nginx/conf.d/default.conf
 
-#SSH configuration 
-RUN adduser -D nginx_user && echo "nginx_user:pvivian" | chpasswd
-RUN ssh-keygen -n nginx_user -f /etc/ssh/nginx_key
-
-# List ports & run script
-EXPOSE 80 443 22
-CMD /usr/bin/supervisord -c /etc/supervisord.conf
+# List ports & run
+EXPOSE 80 443
+ENTRYPOINT ["nginx", "-g", "daemon off;"]

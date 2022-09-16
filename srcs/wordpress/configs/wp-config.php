@@ -29,7 +29,7 @@ define( 'DB_USER', 'wp' );
 define( 'DB_PASSWORD', 'pvivian' );
 
 /** MySQL hostname */
-define( 'DB_HOST', 'mysql-svc' );
+define( 'DB_HOST', 'mariadb' );
 
 /** Database Charset to use in creating database tables. */
 define( 'DB_CHARSET', 'utf8' );
