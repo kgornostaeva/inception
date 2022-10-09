@@ -1,0 +1,67 @@
+version: '3.7'
+services:
+  mariadb:
+    container_name: mariadb
+    build: requirements/mariadb
+    image: mariadb:${IMAGE_TAG}
+    volumes:
+      - mysql:/var/lib/mysql
+    env_file:
+        - .env
+    networks:
+      - back
+    ports:
+      - "3306:3306"
+    restart: on-failure
+
+  wordpress:
+    container_name: wordpress
+    build: requirements/wordpress
+    image: wordpress:${IMAGE_TAG}
+    volumes:
+      - wordpress:/var/www/html
+    depends_on:
+      - mariadb
+    env_file:
+      - .env
+    networks:
+      - front
+      - back
+    ports:
+      - "9000:9000"
+    restart: on-failure
+
+  nginx:
+    container_name: nginx
+    build: requirements/nginx
+    image: nginx:${IMAGE_TAG}
+    volumes:
+      - wordpress:/var/www/html
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - wordpress
+    networks:
+      - front
+    restart: on-failure
+
+networks:
+  front:
+  back:
+
+volumes:
+  wordpress:
+    name: wordpress
+    driver: local
+    driver_opts:
+      device: /home/pvivian/data/wordpress
+      type: none
+      o: bind
+  mysql:
+    name: mysql
+    driver: local
+    driver_opts:
+      device: /home/pvivian/data/mysql
+      type: none
+      o: bind
